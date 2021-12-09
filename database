@@ -1,1 +1,11 @@
+import sqlite3
 
+# We need to import the Request object as well:
+from fastapi import FastAPI, Request
+import uvicorn
+
+app = FastAPI()
+
+@app.get("/")
+def root():
+  return {"message": "It works !"}
