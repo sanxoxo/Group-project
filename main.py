@@ -59,3 +59,29 @@ async def register_subscription(payload: Request):
     # Close the DB
     database.close()
     return True
+#--------------------------------------------------------
+# create a quote for each customer (via subscriptions)    PAS DEFINITIF
+#---------------------------------------------------------
+  @app.post("/register_quote")
+async def register_Quote(payload: Request):
+    values_dict = await payload.json()
+    # Open the DB
+    database = sqlite3.connect('databaseproject.db', isolation_level=None)
+    # Step 1: retrieve the customer
+
+    query_customer = database.execute(''' 
+                    SELECT CustomerAccount FROM Customer
+                    WHERE VAT = {}               
+                    '''.format(str(values_dict['VAT'])))
+    # We then store the results of the query with fetchall.
+    customer_results = query_customer.fetchall()
+    print(customer_results)
+    # Step 2: create a new quote for the customer and subscription:
+    #query_quote = database.execute('''
+            #INSERT INTO Quote(CustomerAccount, SubscriptionN) 
+            #VALUES ({customer}, {subscription})             
+            #'''.format(customer=str(customer_results), subscription=str(values_dict['SubscriptionN'])))
+    #print(query_quote)
+    # Close the DB
+    database.close()
+    return True
