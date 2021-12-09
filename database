@@ -1,11 +1,60 @@
-import sqlite3
+PAS DEFINITIF!!!!
 
-# We need to import the Request object as well:
-from fastapi import FastAPI, Request
-import uvicorn
+import sqlite3 
 
-app = FastAPI()
+database = sqlite3.connect('databaseproject.db', isolation_level=None)
+print('Database opened')
 
-@app.get("/")
-def root():
-  return {"message": "It works !"}
+
+database.execute(''' CREATE TABLE IF NOT EXISTS Company(
+    VAT TEXT PRIMARY KEY NOT NULL,
+    CompanyName TEXT NOT NULL,
+    Adress TEXT NOT NULL,
+    BankAccountN TEXT NOT NULL) ''')
+print("Table created successfully")
+
+
+database.execute(''' CREATE TABLE IF NOT EXISTS Subscriptions(
+    SubscriptionN INT PRIMARY KEY  NULL,
+    SubscriptionInfo TEXT  NULL,
+    Price INT  NULL,
+    VAT TEXT  NULL,
+    FOREIGN KEY (VAT) REFERENCES Company(VAT)) ''')
+print("Table created successfully")
+
+database.execute(''' CREATE TABLE IF NOT EXISTS Quote_Subscription(
+    Subscription_QuoteID INT PRIMARY KEY NOT NULL,
+    QuoteID INT NOT NULL,
+    SubscriptionN INT NOT NULL,
+    FOREIGN KEY (QuoteID) REFERENCES Quote(QuoteID),
+    FOREIGN KEY (SubscriptionN) REFERENCES Subscriptions(SubscriptionN)) ''')
+print("Table created successfully")
+
+database.execute(''' CREATE TABLE IF NOT EXISTS Quote(
+    QuoteID INT PRIMARY KEY  NULL,
+    Quantity INTT  NULL,
+    TotalPrice TEXT  NULL,
+    SubscriptionN TEXT NULL,
+    CustomerAccount INT  NULL,
+    FOREIGN KEY (CustomerAccount) REFERENCES Customer(CustomerAccount)) ''')
+print("Table created successfully")
+
+database.execute(''' CREATE TABLE IF NOT EXISTS Customer(
+    CustomerAccount INT PRIMARY KEY NOT NULL,
+    FullName TEXT NULL,
+    Email TEXT NULL,
+    Password TEXT NULL,
+    Accepted BOOLEAN NULL,
+    VAT TEXT NOT NULL,
+    FOREIGN KEY (VAT) REFERENCES Company(VAT))''')
+print("Table created successfully")
+
+database.execute(''' CREATE TABLE IF NOT EXISTS Invoice(
+    InvoiceID INT PRIMARY KEY NOT NULL,
+    CustomerAccount TEXT NOT NULL,
+    FOREIGN KEY (CustomerAccount) REFERENCES Customer(CustomerAccount)) ''')
+print("Table created successfully")
+
+database.execute(''' CREATE TABLE IF NOT EXISTS ExchangeRate(
+    ID INT PRIMARY KEY NOT NULL) ''')
+print("Table created successfully")
