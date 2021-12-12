@@ -182,8 +182,8 @@ async def send_invoice(payload: Request):
     database = sqlite3.connect('databaseproject.db', isolation_level=None)
     query_accepted_for_invoice=database.execute('''SELECT Accepted FROM Quote
                                     WHERE SubscriptionN = {}
-                                    '''.format(values_dict['CustomerAccount'])) 
-send_results = query_accepted_for_invoice.fetchall()
+                                    '''.format(values_dict['SubcriptionN'])) 
+    send_results = query_accepted_for_invoice.fetchall()
     print(send_results)
     if send_results == '1' :                   #We can send an invoice only if the quote is accepted
          query_send_invoice=database.execute('''UPDATE Invoice 
@@ -197,7 +197,7 @@ send_results = query_accepted_for_invoice.fetchall()
       print('invoice can not be sent')    
     # Close the DB
       database.close()
-      return True
+    return True
 
 #---------------------------------------------------
 # if not paid send a pending invoice
