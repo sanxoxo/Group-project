@@ -51,8 +51,7 @@ print("Table created successfully")
 
 database.execute(''' CREATE TABLE IF NOT EXISTS Invoice(
     InvoiceID INT PRIMARY KEY NOT NULL,
-    CustomerAccount TEXT NOT NULL,
-    FOREIGN KEY (CustomerAccount) REFERENCES Customer(CustomerAccount)) ''')
+    Pending BOOLEAN NULL ''')
 print("Table created successfully")
 
 database.execute(''' CREATE TABLE IF NOT EXISTS ExchangeRate(
