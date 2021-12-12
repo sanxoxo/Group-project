@@ -143,7 +143,7 @@ async def accept_quote(payload: Request):
       print('incorrect password')
     # Close the DB
       database.close()
-      return True
+    return True
  #---------------------------------------------------
  # (4) activate the subscription in Subscription (update)
  #---------------------------------------------------
@@ -170,7 +170,7 @@ async def activate_Subscription(payload: Request):
       print('subscription can not be activated')    
     # Close the DB
       database.close()
-      return True                  
+    return True                  
 
 #---------------------------------------------------------------------
 # (5) for an activated subscription, we will send an invoice  PAS DEFINITIF
