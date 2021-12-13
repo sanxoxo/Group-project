@@ -202,29 +202,29 @@ async def send_invoice(payload: Request):
 #---------------------------------------------------
 # (6) if not paid send a pending invoice        PAS DEFINITIF FONCTIONNE PAS
 #----------------------------------------------------
-@app.post("/invoice_paid")
-async def invoice_paid(payload: Request):
-    values_dict = await payload.json()
+#@app.post("/invoice_paid")
+#async def invoice_paid(payload: Request):
+    #values_dict = await payload.json()
     # Open the DB
-    database = sqlite3.connect('databaseproject.db', isolation_level=None)
-    query_paid=database.execute('''SELECT Paid FROM Invoice
+    #database = sqlite3.connect('databaseproject.db', isolation_level=None)
+    #query_paid=database.execute('''SELECT Paid FROM Invoice
                                     WHERE QuoteID = {}
                                     '''.format(values_dict['QuoteID'])) 
-    paid_results = query_paid.fetchall()
-    print(paid_results)
-    if paid_results == '1' :                   #We will send a "pending invoice" message only if it's not paid
-        query_paid=database.execute('''UPDATE Invoice 
+    #paid_results = query_paid.fetchall()
+    #print(paid_results)
+    #if paid_results == '1' :                   #We will send a "pending invoice" message only if it's not paid
+        #query_paid=database.execute('''UPDATE Invoice 
                                         SET Pending = 0
                                         WHERE QuoteID = {quote_number}       
                                         '''.format(quote_number = values_dict['QuoteID']))
-        paid_results = query_paid.fetchall()
-        print(paid_results)
-        print('Invoice is paid')
-    else:
-      print('Your invoice is not paid yet')    
+        #paid_results = query_paid.fetchall()
+        #print(paid_results)
+        #print('Invoice is paid')
+    #else:
+      #print('Your invoice is not paid yet')    
     # Close the DB
-      database.close()
-    return True
+      #database.close()
+    #return True
 
 #---------------------------------------------------------
 # if paid, delete pending 
