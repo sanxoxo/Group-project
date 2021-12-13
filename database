@@ -36,6 +36,7 @@ database.execute(''' CREATE TABLE IF NOT EXISTS Quote(
     TotalPrice TEXT  NULL,
     SubscriptionN TEXT NULL,
     CustomerAccount INT  NULL,
+    Accepted BOOLEAN NULL,
     FOREIGN KEY (CustomerAccount) REFERENCES Customer(CustomerAccount)) ''')
 print("Table created successfully")
 
