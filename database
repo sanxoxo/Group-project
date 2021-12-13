@@ -17,7 +17,8 @@ print("Table created successfully")
 database.execute(''' CREATE TABLE IF NOT EXISTS Subscriptions(
     SubscriptionN INT PRIMARY KEY  NULL,
     SubscriptionInfo TEXT  NULL,
-    Price INT  NULL,
+    Price FLOAT  NULL,
+    Activated BOOLEAN NULL,
     VAT TEXT  NULL,
     FOREIGN KEY (VAT) REFERENCES Company(VAT)) ''')
 print("Table created successfully")
@@ -33,10 +34,11 @@ print("Table created successfully")
 database.execute(''' CREATE TABLE IF NOT EXISTS Quote(
     QuoteID INT PRIMARY KEY  NULL,
     Quantity INTT  NULL,
-    TotalPrice TEXT  NULL,
+    TotalPrice FLOAT  NULL,
+    TotalPriceVat FLOAT NULL,
     SubscriptionN TEXT NULL,
-    CustomerAccount INT  NULL,
     Accepted BOOLEAN NULL,
+    CustomerAccount INT  NULL,
     FOREIGN KEY (CustomerAccount) REFERENCES Customer(CustomerAccount)) ''')
 print("Table created successfully")
 
@@ -45,14 +47,15 @@ database.execute(''' CREATE TABLE IF NOT EXISTS Customer(
     FullName TEXT NULL,
     Email TEXT NULL,
     Password TEXT NULL,
-    Accepted BOOLEAN NULL,
     VAT TEXT NOT NULL,
     FOREIGN KEY (VAT) REFERENCES Company(VAT))''')
 print("Table created successfully")
 
 database.execute(''' CREATE TABLE IF NOT EXISTS Invoice(
     InvoiceID INT PRIMARY KEY NOT NULL,
-    Pending BOOLEAN NULL ''')
+    Pending BOOLEAN NULL,
+    QuoteID INT NULL,
+    FOREIGN KEY (QuoteID) REFERENCES Quote(QuoteID)) ''')
 print("Table created successfully")
 
 database.execute(''' CREATE TABLE IF NOT EXISTS ExchangeRate(
