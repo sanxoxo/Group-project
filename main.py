@@ -173,7 +173,7 @@ async def activate_Subscription(payload: Request):
     return True                  
 
 #---------------------------------------------------------------------
-# (5) for an activated subscription, we will send an invoice  PAS DEFINITIF
+# (5) for an activated subscription, we will send an invoice
 #---------------------------------------------------------------------
 @app.post("/send_invoice")
 async def send_invoice(payload: Request):
@@ -200,7 +200,7 @@ async def send_invoice(payload: Request):
     return True
 
 #---------------------------------------------------
-# (6) if not paid send a pending invoice        PAS DEFINITIF
+# (6) if not paid send a pending invoice        PAS DEFINITIF FONCTIONNE PAS
 #----------------------------------------------------
 @app.post("/invoice_paid")
 async def invoice_paid(payload: Request):
