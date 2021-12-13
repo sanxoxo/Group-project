@@ -29,8 +29,34 @@ POST http://127.0.0.1:8000/register_quote HTTP/1.1
 Content-Type: application/json
 
 {
-    "VAT": "12345",
-    "SubscriptionN": "200"
+    "SubscriptionN": "201",
+    "FullName": "Afzan",
+    "QuoteID": "0001"
 }
+###
 
+POST http://127.0.0.1:8000/accept_quote HTTP/1.1
+Content-Type: application/json
+
+{
+    "CustomerAccount": "4",
+    "Password": "'Hadile'"
+}
+###
+
+POST http://127.0.0.1:8000/activate_subscription HTTP/1.1
+Content-Type: application/json
+
+{
+    "CustomerAccount": "4"
+}
+###
+
+POST http://127.0.0.1:8000/send_invoice HTTP/1.1
+Content-Type: application/json
+
+{
+    "CustomerAccount": "4",
+    "QuoteID": "1"
+}
 ###
