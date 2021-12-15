@@ -1,15 +1,13 @@
-PAS DEFINITIF!!!!
-
-import sqlite3 
+import sqlite3              #DEFINITIVE
 
 database = sqlite3.connect('databaseproject.db', isolation_level=None)
 print('Database opened')
 
 
 database.execute(''' CREATE TABLE IF NOT EXISTS Company(
-    VAT TEXT PRIMARY KEY NOT NULL,
+    VAT INT PRIMARY KEY NOT NULL,
     CompanyName TEXT NOT NULL,
-    Adress TEXT NOT NULL,
+    Address TEXT NOT NULL,
     BankAccountN TEXT NOT NULL) ''')
 print("Table created successfully")
 
@@ -18,44 +16,39 @@ database.execute(''' CREATE TABLE IF NOT EXISTS Subscriptions(
     SubscriptionN INT PRIMARY KEY  NULL,
     SubscriptionInfo TEXT  NULL,
     Price FLOAT  NULL,
-    Activated BOOLEAN NULL,
-    VAT TEXT  NULL,
-    FOREIGN KEY (VAT) REFERENCES Company(VAT)) ''')
-print("Table created successfully")
-
-database.execute(''' CREATE TABLE IF NOT EXISTS Quote_Subscription(
-    Subscription_QuoteID INT PRIMARY KEY NOT NULL,
-    QuoteID INT NOT NULL,
-    SubscriptionN INT NOT NULL,
-    FOREIGN KEY (QuoteID) REFERENCES Quote(QuoteID),
-    FOREIGN KEY (SubscriptionN) REFERENCES Subscriptions(SubscriptionN)) ''')
+    VAT INT  NULL,
+    FOREIGN KEY (VAT) REFERENCES Company(VAT))''')
 print("Table created successfully")
 
 database.execute(''' CREATE TABLE IF NOT EXISTS Quote(
     QuoteID INT PRIMARY KEY  NULL,
-    Quantity INTT  NULL,
-    TotalPrice FLOAT  NULL,
-    TotalPriceVat FLOAT NULL,
-    SubscriptionN TEXT NULL,
-    Accepted BOOLEAN NULL,
-    CustomerAccount INT  NULL,
-    FOREIGN KEY (CustomerAccount) REFERENCES Customer(CustomerAccount)) ''')
+    RegistreNational INT NULL,
+    Price FLOAT  NULL,
+    PriceVAT FLOAT NULL,
+    Accepted BOOLEAN,
+    Activated BOOLEAN,
+    InvoiceID INT NULL,
+    SubscriptionN INT NULL,
+    FOREIGN KEY (SubscriptionN) REFERENCES Subscriptions(SubscriptionN),
+    FOREIGN KEY (InvoiceID) REFERENCES Invoice(InvoiceID)) ''')
 print("Table created successfully")
 
 database.execute(''' CREATE TABLE IF NOT EXISTS Customer(
     CustomerAccount INT PRIMARY KEY NOT NULL,
+    RegistreNational INT NULL,
     FullName TEXT NULL,
-    Email TEXT NULL,
+    Country TEXT NULL,
     Password TEXT NULL,
-    VAT TEXT NOT NULL,
+    VAT INT NOT NULL,
     FOREIGN KEY (VAT) REFERENCES Company(VAT))''')
 print("Table created successfully")
 
 database.execute(''' CREATE TABLE IF NOT EXISTS Invoice(
     InvoiceID INT PRIMARY KEY NOT NULL,
-    Pending BOOLEAN NULL,
-    QuoteID INT NULL,
-    FOREIGN KEY (QuoteID) REFERENCES Quote(QuoteID)) ''')
+    Pending BOOLEAN,
+    Paid BOOLEAN,
+    TotalPriceVAT FLOAT NULL,
+    RegistreNational INT NULL) ''')
 print("Table created successfully")
 
 database.execute(''' CREATE TABLE IF NOT EXISTS ExchangeRate(
