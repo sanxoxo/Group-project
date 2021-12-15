@@ -1,7 +1,6 @@
 import sqlite3
 from fastapi import FastAPI, Request
 import uvicorn
-
 app = FastAPI()
 
 # Router
@@ -9,112 +8,109 @@ app = FastAPI()
 def root():
   return {"hey Hadile": "It works !"}
 #--------------------------
-#(1) register customer
+#1 register customer
 #--------------------------
 @app.post("/register_customer")
 async def register_customer(payload: Request):
     values_dict = await payload.json()
     # Open the DB
     database = sqlite3.connect('databaseproject.db', isolation_level=None)
-    query_company = database.execute(''' 
-                    SELECT VAT FROM Company
-                    WHERE VAT = {}               
-                    '''.format(str(values_dict['VAT'])))
-    # We then store the results of the query with fetchall.
-    company_results = query_company.fetchall()[0]
-    print(company_results)
-    # Step 2: create a new customer:
     query_customer = database.execute('''
-            INSERT INTO Customer (CustomerAccount, VAT, FullName, Email, Password)
-            VALUES ({customer}, {company}, {fullname}, {email}, {password})
-            '''.format(customer=str(values_dict['CustomerAccount']) ,
-                       company=str(values_dict['VAT']),
+            INSERT INTO Customer(CustomerAccount, VAT, FullName, Country, RegistreNational, Password)
+            VALUES ({customer}, {company}, {fullname}, {country}, {registrenational}, {password})
+            '''.format(customer=(values_dict['CustomerAccount']) ,
+                       company=(values_dict['VAT']),
                        fullname=values_dict['FullName'],
-                       email=str(values_dict['Email']),
-                       password=str(values_dict['Password'])))
+                       country=(values_dict['Country']),
+                       registrenational=(values_dict['RegistreNational']),
+                       password=(values_dict['Password'])))
     print (query_customer)
     # Close the DB
     database.close()
     return True
   #--------------------------------------------------------
-  # (2) a company creates subscriptions in Subscriptions
+  # 2 a company creates subscriptions in Subscriptions
   #---------------------------------------------------------
 @app.post("/register_subscription")
 async def register_subscription(payload: Request):
     values_dict = await payload.json()
     # Open the DB
     database = sqlite3.connect('databaseproject.db', isolation_level=None)
-    query_company = database.execute(''' 
-                    SELECT VAT FROM Company
-                    WHERE VAT = {}               
-                    '''.format(str(values_dict['VAT'])))
-    # We then store the results of the query with fetchall.
-    company_results = query_company.fetchall()[0]
-    print(company_results)
-    # Step 2: create a new subscription:
     query_subscription = database.execute('''
-            INSERT INTO Subscriptions (SubscriptionN, Price, VAT, SubscriptionInfo)
-            VALUES ({subscription}, {price}, {company}, {info})
-            '''.format(subscription=str(values_dict['SubscriptionN']) ,
-                       price=str(values_dict['Price']) ,
-                       company=str(values_dict['VAT']),
-                       info=str(values_dict['SubscriptionInfo'])))
+                         INSERT INTO Subscriptions (SubscriptionN, Price, VAT, SubscriptionInfo)
+                         VALUES ({subscription}, {price}, {company}, {info})
+                         '''.format(subscription=(values_dict['SubscriptionN']),
+                             price=(values_dict['Price']),
+                             company=(values_dict['VAT']),
+                             info=(values_dict['SubscriptionInfo'])))
     print (query_subscription)
     # Close the DB
     database.close()
     return True
   #--------------------------------------------------------
-  # (3.1)create a quote for each customer
+  # 3 create a quote for each customer
   #---------------------------------------------------------
+  # inputs: quoteid, subscription, registre national
 @app.post("/register_quote")
-async def register_Quote(payload: Request):
+async def register_quote(payload: Request):
     values_dict = await payload.json()
     # Open the DB
     database = sqlite3.connect('databaseproject.db', isolation_level=None)
-    
     # Step 1: retrieve the subscription via VAT
+
     query_quote = database.execute(''' 
-                    SELECT VAT FROM Subscriptions
-                    WHERE SubscriptionN = {}               
-                    '''.format(str(values_dict['SubscriptionN'])))   # where = je donne les subscitpionsN
+                  SELECT VAT FROM Subscriptions
+                  WHERE SubscriptionN =  {}               
+                  '''.format(values_dict['SubscriptionN']))  
+    # where = je donne les subscitpionsN
     # We then store the results of the query with fetchall.
     quote_results = query_quote.fetchall()[0][0]
     print(quote_results)
 
     # thanks to the VAT that we get, we will retrieve the customer list that are in this company
-
     query_quote2 = database.execute(''' 
-                    SELECT CustomerAccount, FullName FROM Customer
-                    WHERE VAT = {}               
-                    '''.format(str(quote_results)))  #the result will be all the customers that belong to the company that has the VAT stored previously ==> NOT A LIST!! BC NO FETCHALL 
+                  SELECT  RegistreNational FROM Customer
+                  WHERE VAT = {}               
+                  '''.format(str(quote_results)))  #the result will be all the customers that belong to the company that has the VAT stored previously ==> NOT A LIST!! BC NO FETCHALL 
     # We then store the results of the query with fetchall.
-    quote_results2 = query_quote2.fetchall() # here, it becomes a list [(customerAccount,Fullname),();()...]
+    quote_results2 = query_quote2.fetchall()
+    # here, it becomes a list [(customerAccount,Fullname),();()...]
     print(quote_results2)
-    x = []
+    
+    query_price = database.execute('''
+                                   SELECT Price FROM Subscriptions
+                                   WHERE SubscriptionN ={}
+                                   '''.format(values_dict['SubscriptionN']))
+    price_results = query_price.fetchall()[0][0]
+    print(price_results)
+    
+    pricevat = float(price_results)*1.21
+    print(pricevat)
   # Jusqu'ici, we have succeeded to retrieve the VAT and all its customers based ONLYYYY on the subcriptionN
     for i in quote_results2: 
       print(i) 
-      if str(i[1]) == str(values_dict['FullName']): # valuedict = données que on va donner, cad ce qui sera mis dans le http 
+      if str(i[0]) == str(values_dict['RegistreNational']): # valuedict = données que on va donner, cad ce qui sera mis dans le http 
         x =str(i[0])
         
         query_quote3 = database.execute('''
-            INSERT INTO Quote (QuoteID, SubscriptionN, CustomerAccount) 
-            VALUES ({quote}, {subscription}, {customer})             
-            '''.format(quote=str(values_dict['QuoteID']), subscription=str(values_dict['SubscriptionN']), customer=x))
+            INSERT INTO Quote (QuoteID, SubscriptionN, RegistreNational, Price, Accepted, PriceVAT) 
+            VALUES ({quote}, {subscription}, {registrenational}, {price}, {accepted}, {pricevat})             
+            '''.format(quote=str(values_dict['QuoteID']),
+                       subscription=str(values_dict['SubscriptionN']),
+                       price=price_results,
+                       accepted='FALSE',
+                       pricevat=pricevat,
+                       registrenational=x))
         print(query_quote3)
       else: 
-        print("Client does not exist")
-# valuedict = données que on va donner, cad ce qui sera mis dans le http 
-
+        print("Client does not exist for this VAT:"+ str(quote_results))
+# valuedict = données que on va donner, cad ce qui sera mis dans le http
+   
     # Close the DB
     database.close()
     return True
-#--------------------------------------------------------------------------------
-#(3.2) if quote accepted by customer, activate subscription for the customer
-#--------------------------------------------------------------------------------
-
  #---------------------------------------
- #(3.3) update Accepted in Quote
+ #update Accepted in Quote
  #--------------------------------------
 @app.post("/accept_quote")
 async def accept_quote(payload: Request):
@@ -127,25 +123,31 @@ async def accept_quote(payload: Request):
                              WHERE CustomerAccount = {}
                   '''.format(values_dict['CustomerAccount']))
   
-    password = secret_query.fetchall()
+    password = secret_query.fetchall()[0][0]
     print(password)
-    if password == values_dict['Password']:
-      #return "error"
-       accept_query = database.execute(''' 
-                    UPDATE Quote
-                    SET Accepted = 1
-                    WHERE CustomerAccount = {customer}       
-                    '''.format(customer = values_dict['CustomerAccount']))
-       accepted = accept_query.fetchall()
-       print(accepted)
-       print('quote_accepted')
+    if (password) == (values_dict['Password']):
+      print('yess')
+      accept_query = database.execute(''' 
+                                       UPDATE Quote 
+                                       SET Accepted = TRUE
+                                       WHERE QuoteID = {quote}       
+                                       '''.format(quote = str(values_dict['QuoteID'])))
+       
+      print('quote accepted')
+      a = database.execute('''
+                           SELECT * FROM  Quote
+                           ''')
+      a_results=a.fetchall()
+      print(a_results)
     else:
-      print('incorrect password')
+      print('quote not accepted')
+      
+   
     # Close the DB
-      database.close()
+    database.close()
     return True
  #---------------------------------------------------
- # (4) activate the subscription in Subscription (update)
+ #activate the subscription in Subscription (update)
  #---------------------------------------------------
 @app.post("/activate_subscription")
 async def activate_Subscription(payload: Request):
@@ -153,85 +155,99 @@ async def activate_Subscription(payload: Request):
     # Open the DB
     database = sqlite3.connect('databaseproject.db', isolation_level=None)
     query_accepted=database.execute('''SELECT Accepted FROM Quote
-                                    WHERE CustomerAccount = {}
-                                    '''.format(values_dict['CustomerAccount'])) 
-    
-    accepted_results = query_accepted.fetchall()
+                                       WHERE QuoteID= {}
+                                    '''.format(values_dict['QuoteID'])) 
+    accepted_results=query_accepted.fetchall()
     print(accepted_results)
-    if accepted_results == '1' :
-         query_activated=database.execute('''UPDATE Subscriptions 
-                                        SET Activated = 1
-                                        WHERE CustomerAccount = {customer}       
-                                        '''.format(customer = values_dict['CustomerAccount']))
-         activated_results = query_activated.fetchall()
-         print(activated_results)
+    
+    if int(accepted_results[0][0])==1 :
+         query_activated=database.execute('''UPDATE Quote 
+                                          SET Activated = TRUE
+                                          WHERE QuoteID = {}     
+                                          '''.format(values_dict['QuoteID']))
          print('subscription activated')
+         b=database.execute('''
+                            SELECT * FROM Quote
+                            ''')
+         b_results=b.fetchall()
+         print(b_results)
     else: 
       print('subscription can not be activated')    
-    # Close the DB
-      database.close()
+       #Close the DB
+    database.close()
     return True                  
-
 #---------------------------------------------------------------------
-# (5) for an activated subscription, we will send an invoice
+# for an activated subscription, send invoice
 #---------------------------------------------------------------------
 @app.post("/send_invoice")
 async def send_invoice(payload: Request):
     values_dict = await payload.json()
     # Open the DB
     database = sqlite3.connect('databaseproject.db', isolation_level=None)
-    query_accepted_for_invoice=database.execute('''SELECT Accepted FROM Quote
-                                    WHERE SubscriptionN = {}
-                                    '''.format(values_dict['SubcriptionN'])) 
-    send_results = query_accepted_for_invoice.fetchall()
-    print(send_results)
-    if send_results == '1' :                   #We can send an invoice only if the quote is accepted
-         query_send_invoice=database.execute('''UPDATE Invoice 
-                                        SET Pending = 1
-                                        WHERE QuoteID = {quote_number}       
-                                        '''.format(quote_number = values_dict['QuoteID']))
-         send_invoice_results = query_send_invoice.fetchall()
-         print(send_invoice_results)
-         print('invoice sent to customer')
-    else: 
-      print('invoice can not be sent')    
-    # Close the DB
-      database.close()
-    return True
+#select tous les subscriptionN et pricevat d'un registre national qui sont activated dans quote
+    query_price = database.execute('''
+                                   SELECT PriceVAT FROM Quote
+                                   WHERE RegistreNational = {registre}
+                                   '''.format(registre=values_dict['RegistreNational']))
+    price_results=query_price.fetchall()
+    print(price_results)
+    query_price2 = database.execute('''
+                                    SELECT SubscriptionN FROM Subscriptions
+                                    WHERE Activated = TRUE
+                                    AND RegistreNational = {registre}
+                                    '''.format(registre=values_dict['RegistreNational']))
+    h=[]
+    
+#calcule la somme de tous les pricevat d'un registre national
 
+   
+    # Close the DB
+    database.close()
+    return True
 #---------------------------------------------------
-# (6) if not paid send a pending invoice        PAS DEFINITIF FONCTIONNE PAS
+# cutomer pays the invoice (update paid)
 #----------------------------------------------------
-#@app.post("/invoice_paid")
-#async def invoice_paid(payload: Request):
+#@app.post("/pay_invoice")
+#async def activate_Subscription(payload: Request):
     #values_dict = await payload.json()
     # Open the DB
     #database = sqlite3.connect('databaseproject.db', isolation_level=None)
-    #query_paid=database.execute('''SELECT Paid FROM Invoice
-                                    WHERE QuoteID = {}
-                                    '''.format(values_dict['QuoteID'])) 
-    #paid_results = query_paid.fetchall()
-    #print(paid_results)
-    #if paid_results == '1' :                   #We will send a "pending invoice" message only if it's not paid
-        #query_paid=database.execute('''UPDATE Invoice 
-                                        SET Pending = 0
-                                        WHERE QuoteID = {quote_number}       
-                                        '''.format(quote_number = values_dict['QuoteID']))
-        #paid_results = query_paid.fetchall()
-        #print(paid_results)
-        #print('Invoice is paid')
-    #else:
-      #print('Your invoice is not paid yet')    
+    #query_accepted=database.execute('''SELECT Accepted FROM Quote
+                                    #WHERE QuoteID = {}
+                                    #'''.format(values_dict['QuoteID'])) 
+    
+    
+    #accepted_results = query_accepted.fetchall()
+    #print(accepted_results)
+    
+    #if accepted_results == '1' and values_dict['Password'] == 'Password'     :
+         #query_pay=database.execute('''UPDATE Invoice 
+                                        #SET Paid = 1
+                                        #WHERE CustomerAccount = {customer}       
+                                        #'''.format(customer = values_dict['CustomerAccount']))
+         #activated_results = query_activated.fetchall()
+         #print(activated_results)
+         #print('subscription activated')
+    #else: 
+      #print('subscription can not be activated')    
     # Close the DB
-      #database.close()
-    #return True
+    database.close()
+    return True          
+
+
+#------------------------------------
+#if not paid send a pending incoice 
+#------------------------------------
+
+
+
 
 #---------------------------------------------------------
-# if paid, delete pending 
+# else, delete pending 
 #---------------------------------------------------------
 
 
 
 
-if _name_ == '_main_':
-  uvicorn.run(app, host='127.0.0.1', port=8000)it
+if __name__ == '__main__':
+  uvicorn.run(app, host='127.0.0.1', port=8000)
