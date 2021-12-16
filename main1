@@ -270,90 +270,46 @@ async def Verify_Payment(payload: Request):
     # Open the DB
     database = sqlite3.connect('databaseproject.db', isolation_level=None)
     query_accepted=database.execute('''SELECT InvoiceID FROM Invoice''')
-    accepted_results=query_accepted.fetchall()
+    accepted_results=query_accepted.fetchall()[0][0]
     
     print(accepted_results)
     #D'abord, je demande au customer de me rentrer son numéro de carte. Que je transforme en liste car je vais devoir loop over an iterable object (donc une liste), on peut pas loop over an integer.
+    card=values_dict['Please insert your card number: ']
+    print(card)
 
-    card_number = list(input("Please insert your card number: "))  
-    #1. on enlève le chiffre le plus à droite
-    checking_digit = card_number.pop()  #pop() is a function in Python that removes and returns the last value from the list 
-    #2. Reverse the order of the remaining digits.
-    number_reversed = reversed(card_number) #same than pop(), here reversed() is an inbuilt function in Python that allows you to reverse the order
-    #3. For this sequence of reversed digits, take the digits at each of the even indices (0, 2, 4, 6, etc.) and double them. If any of the results are greater than 9, subtract 9 from those numbers.
+    card_number = list(str(card))
+    print(card_number)  
+
+         #1. on enlève le chiffre le plus à droite
+    checking_digit = card_number.pop()
+    print(checking_digit)  #pop() is a function in Python that removes and returns the last value from the list 
+         #2. Reverse the order of the remaining digits.
+    card_number.reverse() #same than pop(), here reversed() is an inbuilt function in Python that allows you to reverse the order
+    print(card_number)    #3. For this sequence of reversed digits, take the digits at each of the even indices (0, 2, 4, 6, etc.) and double them. If any of the results are greater than 9, subtract 9 from those numbers.
     results = [] #ma liste que je vais remplir petit à petit avec la fonction append avec les nouvelles valeurs
-    
 
-    for i in accepted_results:
-      if i[0] == values_dict['InvoiceID']:
-        print("Invoice exists")
-    else :
-      print('invoice does not exist')
 
-    for j, k in enumerate(card_number): #Python enumerate() est une fonction Python intégrée. La fonction enumerate() vous permet de boucler sur un objet itérable et de garder la trace du nombre d'itérations effectuées. Enumerate est particulièrement utile si vous avez un tableau de valeurs que vous voulez parcourir entièrement
-            #ici je prends i car j'ai besoin de l'indice (la place où il se trouve dans ma liste) et digit car j'ai besoin du chiffre
-	    if j % 2 == 0: #operateur qui check if i % 2 gives me a remainder or not, if not then it's divisible
-              doubled_digit = int(k) * 2	
+    if accepted_results == values_dict['InvoiceID']:
+      print("Invoice exists")
+    else: 
+      print("Invoice does not exist")
 
-            if doubled_digit > 9 :
-              doubled_digit = doubled_digit - 9
-              results.append(doubled_digit)
-            else:
-              print('cannot do anything')
-                        
-                        
-    else :
+    for j, k in enumerate(card_number): 
+      if j%2 == 0: 
+        double_digit = int(k)*2
+        if double_digit > 9: 
+           double_digit = double_digit - 9
+        results.append(double_digit)
+      else: 
         results.append(int(k))
-    z =sum(results)+int(checking_digit)
-             
-#4. Add together all of the results and add the checking digit.
 
+    z = sum(results)+int(checking_digit)
+    print(z)
+    if z%10 ==0: 
+        print("Card number valid")
 
-           #5. If the result is divisible by 10, the number is a valid card number. If it's not, the card
-           #number is not valid.``
- 
-                          
-    if z % 10 == 0: #C'est le module % opérator : it means that if I divide my sum_results by 10, i don't have any remainder
-	    
-             print("Card number valid")
-    else:
-
-	             print("Card number invalid")   
-
-
-    
-           
-
-
-
-
-
-           
-
-
-
-
-
-
-
-
-
-        
-
-        
-
-
-
-#---------------------------------------------------
-# code de luhn
-#----------------------------------------------------
-
-
-
-
-
-
-
+    else: 
+      print("Card number invalid")
 
 
 #@app.post("/pay_invoice")
