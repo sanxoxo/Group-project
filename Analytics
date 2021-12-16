@@ -1,0 +1,84 @@
+#---------------------------------------------------------
+# MRR
+#---------------------------------------------------------
+#---------------------------------------------------------
+# ARR
+#---------------------------------------------------------
+#---------------------------------------------------------
+# Number of customers
+#---------------------------------------------------------
+#---------------------------------------------------------
+# Average revenu per customers (in one company) 
+#---------------------------------------------------------
+
+
+#---------------------------------------------------------
+# A table with all customers and their current subscriptions 
+#---------------------------------------------------------
+import sqlite3
+from fastapi import FastAPI, Request
+import uvicorn
+app = FastAPI()
+
+database = sqlite3.connect('databaseproject.db', isolation_level=None)
+print('Database opened')
+
+database.execute(''' CREATE TABLE IF NOT EXISTS Customer_Subscription(
+    Cust_SubID INT PRIMARY KEY NOT NULL,
+    RegistreNational INT NULL,
+    CustomerAccount INT NULL,
+    SubscriptionN INT NULL,
+    FOREIGN KEY (CustomerAccount) REFERENCES Customer(CustomerAccount),
+    FOREIGN KEY (SubscriptionN) REFERENCES Subscriptions(SubscriptionN))''')
+print("Table analytics created successfully")
+database.close()
+
+
+
+
+
+@app.post("/customer_with_subscriptions")
+async def activate_Subscription(payload: Request):
+    values_dict = await payload.json()
+    # Open the DB
+    database = sqlite3.connect('databaseproject.db', isolation_level=None)
+    query_bond=database.execute('''SELECT Activated FROM Quote
+                                       WHERE RegistreNational= {}
+                                    '''.format(values_dict['RegistreNational'])) 
+    bond_results=query_bond.fetchall()
+    print(bond_results)
+    
+    if int(bond_results[0][0])==1 :
+        query_customer=database.execute('''SELECT CustomerAccount FROM Customer
+                                       WHERE RegistreNational= {}
+                                    '''.format(values_dict['RegistreNational'])) 
+        customer_results=query_customer.fetchall()
+        query_subscription=database.execute('''SELECT SubscriptionN FROM Quote
+                                       WHERE RegistreNational= {}
+                                    '''.format(values_dict['RegistreNational'])) 
+        subscription_results=query_subscription.fetchall()
+         
+        query_createtable=database.execute('''
+            INSERT INTO Customer_ Subscription(Cust_SubID, RegistreNational, CustomerAccount, SubscriptionN)
+            VALUES ({id},{registrenational}, {customer}, {subscriptionN})
+            '''.format(id=(values_dict['Cust_SubID']),
+                       registrenational=(values_dict['RegistreNational']) ,
+                       customer=(customer_results),
+                       subscriptionN=(subscription_results)))
+        print (query_createtable)
+        print('subscription and customer has been register in one table')
+    else: 
+      print('Table can not be createdted')    
+       #Close the DB
+    database.close()
+    return True
+
+POST http://127.0.0.1:8000/customer_with_subscriptions HTTP/1.1
+Content-Type: application/json
+
+{
+    "RegistreNational": 290699
+}
+###
+
+
